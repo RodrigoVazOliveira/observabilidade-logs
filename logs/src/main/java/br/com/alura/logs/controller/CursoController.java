@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.alura.logs.dto.CursoDto;
+import br.com.alura.logs.exceptions.InternalErrorException;
 import br.com.alura.logs.model.CursoModel;
 import br.com.alura.logs.service.CursoService;
 import net.logstash.logback.argument.StructuredArguments;
@@ -73,15 +75,26 @@ public class CursoController {
 	public ResponseEntity<Page<CursoModel>> getAllCursos(
 			@PageableDefault(page = 0, size = 10, sort = "dataInscricao", direction = Sort.Direction.ASC) Pageable pageable) {
 		LOGGER.info("Buscando todos os registros de curso");
-		return ResponseEntity.status(HttpStatus.OK).body(cursoService.findAll(pageable));
+		try {
+			return ResponseEntity.status(HttpStatus.OK).body(cursoService.findAll(pageable));
+		} catch (CannotCreateTransactionException exception) {
+			LOGGER.error("Erro na comunicação do banco de dados. {}",
+					StructuredArguments.keyValue("message", exception.getMessage()));
+			throw new InternalErrorException("Erro momentâneo, por favor tente mais tarde...");
+		}
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Object> getOneCursos(@PathVariable(value = "id") UUID id) {
+		LOGGER.info("Chamando cursoService para buscar um registro por UUID");
 		Optional<CursoModel> cursoModelOptional = cursoService.findById(id);
 		if (!cursoModelOptional.isPresent()) {
+			LOGGER.info("Validação no cursoService não encontrou um registro procurado. {}",
+					StructuredArguments.keyValue("id", id));
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Curso não encontrado!");
 		}
+
+		LOGGER.info("O registro procurado pelo cliente foi encontrado pelo cursoService no banco de dados");
 		return ResponseEntity.status(HttpStatus.OK).body(cursoModelOptional.get());
 	}
 
