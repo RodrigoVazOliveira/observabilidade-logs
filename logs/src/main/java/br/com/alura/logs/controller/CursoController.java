@@ -64,7 +64,7 @@ public class CursoController {
 	@GetMapping
 	public ResponseEntity<Page<CursoModel>> getAllCursos(
 			@PageableDefault(page = 0, size = 10, sort = "dataInscricao", direction = Sort.Direction.ASC) Pageable pageable) {
-		LOGGER.info("[getAllCursos] Buscando todos os registros de curso");
+		LOGGER.info("Buscando todos os registros de curso");
 		return ResponseEntity.status(HttpStatus.OK).body(cursoService.findAll(pageable));
 	}
 
