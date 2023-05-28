@@ -100,25 +100,39 @@ public class CursoController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteCursos(@PathVariable(value = "id") UUID id) {
+		LOGGER.info("Chamando cursoService para deletar um registro por UUID");
 		Optional<CursoModel> cursoModelOptional = cursoService.findById(id);
 		if (!cursoModelOptional.isPresent()) {
+			LOGGER.warn("Tentativa de exclusão abortada, o curso com UUID informado não existe. {}",
+					StructuredArguments.keyValue("uuid", id));
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Curso não encontrado!");
 		}
+
+		LOGGER.info("Validação do cursoService sobre cursoDto executadas com sucesso!");
 		cursoService.delete(cursoModelOptional.get());
+
+		LOGGER.info("O registro procurado pelo cliente foi excluido pelo cursoService e deletado no banco de dados");
 		return ResponseEntity.status(HttpStatus.OK).body("Curso excluído com sucesso!");
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity<Object> updateCursos(@PathVariable(value = "id") UUID id,
 			@RequestBody @Valid CursoDto cursoDto) {
+		LOGGER.info("Chamando cursoService para atualizar um registro por UUID");
 		Optional<CursoModel> cursoModelOptional = cursoService.findById(id);
 		if (!cursoModelOptional.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Curso não encontrado!");
+			LOGGER.warn("Validação no cursoService não encontrou o registro solicitado. {}",
+					StructuredArguments.keyValue("uuid", id));
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Curso não encontrado");
 		}
+
+		LOGGER.info("Validação do cursoService sobre o id informado foi efetuada com sucesso");
 		var cursoModel = new CursoModel();
 		BeanUtils.copyProperties(cursoDto, cursoModel);
 		cursoModel.setId(cursoModelOptional.get().getId());
 		cursoModel.setDataInscricao(cursoModelOptional.get().getDataInscricao());
+
+		LOGGER.info("O registro procurado pelo cliente foi atualizado pelo cursoService no banco de dados com sucesso");
 		return ResponseEntity.status(HttpStatus.OK).body(cursoService.save(cursoModel));
 	}
 
