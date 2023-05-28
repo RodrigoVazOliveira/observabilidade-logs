@@ -1,13 +1,20 @@
 <configuration>
-	<property name="LOG_PATH" value="logs/log-api-cursos.log" />
-	<appender name="STDOUT"
+
+	<contextName>production</contextName>
+
+	<appender name="json"
 		class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>%-60(%d{HH:mm:ss.SSS} %green([%thread])) %-5level %logger{0} %M - %msg %n %rEx{short}</pattern>
-		</encoder>
+		<layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+			<jsonFormatter
+				class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+				<prettyPrint>true</prettyPrint>
+			</jsonFormatter>
+			<timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
+		</layout>
 	</appender>
 
-	<root level="INFO">
-		<appender-ref ref="STDOUT" />
+	<root level="info">
+		<appender-ref ref="json" />
 	</root>
+
 </configuration>
