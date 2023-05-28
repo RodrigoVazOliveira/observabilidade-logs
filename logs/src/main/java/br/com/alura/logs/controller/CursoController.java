@@ -48,16 +48,24 @@ public class CursoController {
 		LOGGER.info("Iniciando salvamento de um curso. {}", StructuredArguments.keyValue("cursoDto", cursoDto));
 
 		if (cursoService.existsByNumeroMatricula(cursoDto.getNumeroMatricula())) {
+			LOGGER.warn("Novo registro não gravado, número de matricula já existe. {}",
+					StructuredArguments.keyValue("numeroMatricula", cursoDto.getNumeroMatricula()));
 			return ResponseEntity.status(HttpStatus.CONFLICT).body("O número de matricula do curso já esta em uso!");
 		}
 
 		if (cursoService.existsByNumeroCurso(cursoDto.getNumeroCurso())) {
+			LOGGER.warn("Novo registro não gravada. O número do curso já existe. {}",
+					StructuredArguments.keyValue("numeroCurso", cursoDto.getNumeroCurso()));
 			return ResponseEntity.status(HttpStatus.CONFLICT).body("O número do curso já esta em uso!");
 		}
+
+		LOGGER.info("Validações de cursoService sobre cursoDto executada com sucesso!");
 
 		CursoModel cursoModel = new CursoModel();
 		BeanUtils.copyProperties(cursoDto, cursoModel);
 		cursoModel.setDataInscricao(LocalDateTime.now(ZoneId.of("UTC")));
+
+		LOGGER.info("Um novo registro foi salvo com sucesso!");
 		return ResponseEntity.status(HttpStatus.CREATED).body(cursoService.save(cursoModel));
 	}
 
